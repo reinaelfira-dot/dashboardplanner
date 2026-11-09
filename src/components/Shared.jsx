@@ -7,10 +7,10 @@ export function SectionHeading({ number, title, detail }) {
   </div>
 }
 
-export function MetricCard({ label, value, note, icon: Icon, tone = 'red' }) {
+export function MetricCard({ label, value, note, icon: Icon, tone = 'red', aside }) {
   return <article className="metric-card">
     <div className="metric-top"><span>{label}</span>{Icon && <span className={`metric-icon ${tone}`}><Icon size={17} /></span>}</div>
-    <strong className="metric-value">{value}</strong>
+    <div className="metric-value-row"><strong className="metric-value">{value}</strong>{aside}</div>
     {note && <span className="metric-note">{note}</span>}
   </article>
 }

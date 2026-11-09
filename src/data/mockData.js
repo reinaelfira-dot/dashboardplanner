@@ -151,7 +151,8 @@ const jobSheets = Array.from({ length: 96 }, (_, index) => {
     sendWarehouse: sentWarehouse ? addDays(received, 1 + ((index * 7) % 5)) : '',
     cost: 1250000 + ((index * 181000) % 5200000),
     priority: `P${(index % 3) + 1}`,
-    workType: ['Cash on Site', 'Repair', 'Backcharge'][index % 3],
+    workType: index % 12 === 0 ? 'Petty Cash' : ['Cash on Site', 'Repair', 'Backcharge'][index % 3],
+    backchargeType: index % 3 === 2 ? (index % 2 === 0 ? 'BCH OR' : 'BCH all Risk') : '',
     age: (index * 9) % 121,
   }
 })

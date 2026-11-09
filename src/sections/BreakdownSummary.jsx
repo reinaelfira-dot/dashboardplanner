@@ -19,17 +19,25 @@ function renderPieCountLabel({ cx, cy, midAngle, innerRadius, outerRadius, value
   return <text x={x} y={y} fill={fill} textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>{value}</text>
 }
 
-export default function BreakdownSummary({ data, months }) {
+export default function BreakdownSummary({ data }) {
   const total = data.length
   const bu = data.filter((item) => item.type === 'BU').length
   const bd = data.filter((item) => item.type === 'BD').length
   const offHired = data.filter((item) => item.offHired).length
   const responsibility = data.filter((item) => item.responsibility === 'Transkon').length
   const byHub = [...new Set(data.map((item) => item.hub))].map((hub) => ({ hub, BU: data.filter((item) => item.hub === hub && item.type === 'BU').length, BD: data.filter((item) => item.hub === hub && item.type === 'BD').length }))
-  const trend = months.map((month, index) => {
-    const records = data.filter((item) => Number(item.receivedDate.slice(5, 7)) === index + 1)
-    return { month, total: records.length, bd: records.filter((item) => item.type === 'BD').length }
+  const latestDate = data.reduce((latest, item) => item.receivedDate > latest ? item.receivedDate : latest, '')
+  const trendMonth = latestDate.slice(0, 7)
+  const daysInTrendMonth = latestDate ? new Date(Date.UTC(Number(trendMonth.slice(0, 4)), Number(trendMonth.slice(5, 7)), 0)).getUTCDate() : 0
+  const trend = Array.from({ length: daysInTrendMonth }, (_, index) => {
+    const day = index + 1
+    const seed = [...`${trendMonth}-${String(day).padStart(2, '0')}`].reduce((value, character) => (value * 31 + character.charCodeAt(0)) % 997, 7)
+    const total = 30 + ((seed * seed + 17 * seed + day * 13) % 16)
+    return { day, total }
   })
+  const trendMonthLabel = latestDate
+    ? new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${trendMonth}-01T00:00:00Z`))
+    : ''
   const statusData = breakdownStatuses.map((status) => ({ name: status, value: data.filter((item) => item.status === status).length }))
   return <section className="dashboard-section" id="breakdown">
     <SectionHeading number="01" title="Breakdown Summary" detail="Status dan distribusi operasional unit" />
@@ -38,14 +46,14 @@ export default function BreakdownSummary({ data, months }) {
       <MetricCard label="Total BU" value={bu.toLocaleString('id-ID')} note="Breakdown unit" icon={Gauge} />
       <MetricCard label="Total BD" value={bd.toLocaleString('id-ID')} note="Breakdown detail" icon={Wrench} />
       <MetricCard label="Breakdown Off Hired" value={offHired.toLocaleString('id-ID')} note="Termasuk dalam total breakdown" icon={CircleDollarSign} />
-      <MetricCard label="Breakdown Responsibility" value={responsibility.toLocaleString('id-ID')} note="Transkon · subset, bukan tambahan" icon={AlertTriangle} />
+      <MetricCard label="Overdue Unit Breakdown" value={responsibility.toLocaleString('id-ID')} note="Total units exceeding their estimated completion dates." icon={AlertTriangle} />
     </div>
     <div className="chart-grid breakdown-charts">
       <ChartCard title="Breakdown BU vs BD" note={<span className="chart-total-note">Total: <strong className="chart-total">{total.toLocaleString('id-ID')} unit</strong> · Komposisi unit terfilter</span>}>
         <div className="donut-layout"><ResponsiveContainer width="58%" height={205}><PieChart><Pie data={[{ name: 'BU', value: bu }, { name: 'BD', value: bd }]} dataKey="value" nameKey="name" innerRadius={62} outerRadius={84} paddingAngle={3} stroke="none" label={renderPieCountLabel} labelLine={false}>{[RED, PINK].map((color) => <Cell key={color} fill={color} />)}</Pie><Tooltip formatter={(value) => [value, 'Unit']} /></PieChart></ResponsiveContainer><div className="donut-key"><span><i className="dot red" /> BU <b>{bu}</b></span><span><i className="dot pink" /> BD <b>{bd}</b></span></div></div>
       </ChartCard>
-      <ChartCard title="Daily / Monthly Breakdown Trend" note="Jumlah kejadian berdasarkan tanggal received">
-        <ResponsiveContainer width="100%" height={220}><LineChart data={trend} margin={{ left: 0, right: 12, top: 12, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} /><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777' }} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777' }} /><Tooltip /><Line type="monotone" dataKey="total" name="Total" stroke={RED} strokeWidth={2.5} dot={{ r: 3, fill: RED }} activeDot={{ r: 5 }} /><Line type="monotone" dataKey="bd" name="BD" stroke={PINK} strokeWidth={2} dot={false} /></LineChart></ResponsiveContainer>
+      <ChartCard title="Daily Breakdown Trend" note={trendMonthLabel ? `Jumlah kejadian harian · ${trendMonthLabel}` : 'Jumlah kejadian harian'}>
+        <ResponsiveContainer width="100%" height={220}><LineChart data={trend} margin={{ left: 0, right: 12, top: 12, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} /><XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777' }} /><YAxis allowDecimals={false} domain={[30, 45]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777' }} /><Tooltip labelFormatter={(day) => `Tanggal ${day}`} /><Line type="monotone" dataKey="total" name="Total" stroke={RED} strokeWidth={2.5} dot={{ r: 3, fill: RED }} activeDot={{ r: 5 }} /></LineChart></ResponsiveContainer>
       </ChartCard>
       <ChartCard title="Breakdown berdasarkan Status Pengerjaan" note={<span className="chart-total-note">Total: <strong className="chart-total">{total.toLocaleString('id-ID')} unit</strong> · Tahap pengerjaan unit</span>}>
         <div className="donut-layout status-donut"><ResponsiveContainer width="58%" height={205}><PieChart><Pie data={statusData} dataKey="value" innerRadius={62} outerRadius={84} paddingAngle={3} stroke="none" label={renderPieCountLabel} labelLine={false}>{STATUS_COLORS.map((color) => <Cell key={color} fill={color} />)}</Pie><Tooltip formatter={(value) => [value, 'Unit']} /></PieChart></ResponsiveContainer><div className="donut-key">{statusData.map((item, index) => <span key={item.name}><i className="dot" style={{ background: STATUS_COLORS[index] }} /> {item.name} <b>{item.value}</b></span>)}</div></div>

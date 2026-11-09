@@ -12,6 +12,32 @@ const columns = [
 const stages = [['Received', 'received'], ['Register', 'register'], ['Send Technical', 'sendTechnical'], ['Approve Technical', 'approveTechnical'], ['Send to Warehouse', 'sendWarehouse']]
 const formatMoney = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value)
 
+function JobSheetMetricGrid({ jobs }) {
+  const jobTypeCount = (type) => jobs.filter((item) => item.workType === type).length
+  const priorityCount = (priority) => jobs.filter((item) => item.priority === priority).length
+  const danaHoBalikpapanCount = jobs.filter((item) => item.workType === 'Repair' && item.hub === 'BALIKPAPAN').length
+  const backchargeTypeCount = (type) => jobs.filter((item) => item.workType === 'Backcharge' && item.backchargeType === type).length
+  return <div className="metric-grid seven">
+    <MetricCard label="Total Job Sheet" value={jobs.length} note="Jobsheet unik" />
+    <MetricCard label="Job Sheet P1" value={priorityCount('P1')} note="Prioritas 1" />
+    <MetricCard label="Job Sheet P2" value={priorityCount('P2')} note="Prioritas 2" />
+    <MetricCard label="Job Sheet P3" value={priorityCount('P3')} note="Prioritas 3" />
+    <MetricCard label="Cash on Site" value={jobTypeCount('Cash on Site')} note="Work type" />
+    <MetricCard label="Repair" value={jobTypeCount('Repair')} aside={
+      <div className="repair-side-metrics">
+        <div><span>Dana HO Balikpapan</span><strong>{danaHoBalikpapanCount}</strong></div>
+        <div><span>Petty Cash</span><strong>{jobTypeCount('Petty Cash')}</strong></div>
+      </div>
+    } />
+    <MetricCard label="Backcharge" value={jobTypeCount('Backcharge')} aside={
+      <div className="repair-side-metrics">
+        <div><span>BCH OR</span><strong>{backchargeTypeCount('BCH OR')}</strong></div>
+        <div><span>BCH all Risk</span><strong>{backchargeTypeCount('BCH all Risk')}</strong></div>
+      </div>
+    } />
+  </div>
+}
+
 function ChartBars({ rows, field, title }) {
   const data = [...new Set(rows.map((item) => item[field]))].map((name) => ({ name, total: rows.filter((item) => item[field] === name).length })).sort((a, b) => b.total - a.total).slice(0, 5).sort((a, b) => a.name.localeCompare(b.name, 'id'))
   const maxTotal = Math.max(0, ...data.map((item) => item.total))
@@ -33,24 +59,17 @@ export default function JobSheetMonitoring({ data }) {
   const workflow = stages.map(([label, key]) => ({ label, count: uniqueJobs.filter((item) => item[key]).length }))
   const aging = [{ label: '≤30 hari', count: uniqueJobs.filter((item) => item.age <= 30).length }, { label: '31–60 hari', count: uniqueJobs.filter((item) => item.age > 30 && item.age <= 60).length }, { label: '61–90 hari', count: uniqueJobs.filter((item) => item.age > 60 && item.age <= 90).length }, { label: '> 90 hari', count: uniqueJobs.filter((item) => item.age > 90).length }]
   const responsibility = [...new Set(uniqueJobs.map((item) => item.responsibility))].map((name) => ({ name, total: uniqueJobs.filter((item) => item.responsibility === name).length }))
-  const jobTypeCount = (type) => uniqueJobs.filter((item) => item.workType === type).length
-  const priorityCount = (priority) => uniqueJobs.filter((item) => item.priority === priority).length
+  const plannerJobs = uniqueJobs.filter((item) => item.responsibility === 'Planner')
   return <section className="dashboard-section" id="job-sheet">
-    <SectionHeading number="02" title="Job Sheet Monitoring" detail="Alur pekerjaan, aging, dan rincian job sheet terdaftar" />
-    <div className="metric-grid seven">
-      <MetricCard label="Total Job Sheet" value={uniqueJobs.length} note="Jobsheet unik" />
-      <MetricCard label="Job Sheet P1" value={priorityCount('P1')} note="Prioritas 1" />
-      <MetricCard label="Job Sheet P2" value={priorityCount('P2')} note="Prioritas 2" />
-      <MetricCard label="Job Sheet P3" value={priorityCount('P3')} note="Prioritas 3" />
-      <MetricCard label="Cash on Site" value={jobTypeCount('Cash on Site')} note="Work type" />
-      <MetricCard label="Repair" value={jobTypeCount('Repair')} note="Work type" />
-      <MetricCard label="Backcharge" value={jobTypeCount('Backcharge')} note="Work type" />
-    </div>
+    <SectionHeading number="02" title="Job Sheet Monitoring" detail="Total job sheets created by all site teams" />
+    <JobSheetMetricGrid jobs={uniqueJobs} />
     <div className="chart-grid job-charts">
       <ChartBars rows={uniqueJobs} field="hub" title="Job Sheet berdasarkan Hub" />
       <ChartBars rows={uniqueJobs} field="site" title="Job Sheet berdasarkan Site" />
       <ChartBars rows={uniqueJobs} field="customer" title="Job Sheet berdasarkan Customer" />
     </div>
+    <div className="metric-section-heading"><h3>HO Planner Job Sheet Processing</h3><p>Total job sheets processed by the HO Planner Team</p></div>
+    <JobSheetMetricGrid jobs={plannerJobs} />
     <div className="panel workflow-panel">
       <div className="panel-heading"><div><h3>Workflow Job Sheet</h3><p>Jumlah item yang telah melewati setiap tahap</p></div><span className="panel-kicker">{stages.length} TAHAP</span></div>
       <div className="workflow-track">{workflow.map((step, index) => <div className="workflow-step" key={step.label}><div className={`workflow-node ${index === workflow.length - 1 ? 'last' : ''}`}><strong>{step.count}</strong><span>{step.label}</span></div>{index < workflow.length - 1 && <div className="workflow-connector" />}</div>)}</div>
@@ -64,7 +83,7 @@ export default function JobSheetMonitoring({ data }) {
       </ChartCard>
     </div>
     <div className="panel detail-panel">
-      <div className="panel-heading detail-heading"><div><h3>Detail Job Sheet</h3><p>{searched.length} dari {uniqueJobs.length} pekerjaan · Jobsheet dihitung unik</p></div><label className="search-box"><Search size={16} /><input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="Cari nomor, customer, site..." /></label></div>
+      <div className="panel-heading detail-heading"><div><h3>Breakdown Job Sheet Monitoring</h3><p>Overview of all active breakdown job sheets</p></div><label className="search-box"><Search size={16} /><input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="Cari nomor, customer, site..." /></label></div>
       <div className="table-wrap detail-table-wrap"><table className="detail-table"><thead><tr>{columns.map(([key, label]) => <th key={key}><button onClick={() => setSort(key)}>{label}{sortKey === key && (direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}</button></th>)}</tr></thead><tbody>{visible.map((row) => <tr key={row.jobSheetNumber}>{columns.map(([key]) => <td key={key}>{key === 'cost' ? formatMoney(row[key]) : row[key] || <span className="dash">—</span>}</td>)}</tr>)}{visible.length === 0 && <tr><td className="empty-cell" colSpan={columns.length}>Tidak ada job sheet yang sesuai dengan pencarian dan filter.</td></tr>}</tbody></table></div>
       <div className="pagination"><span>Menampilkan {sorted.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, sorted.length)} dari {sorted.length}</span><div><button disabled={page <= 1} aria-label="Halaman sebelumnya" onClick={() => setPage(page - 1)}><ChevronLeft size={16} /></button><strong>{page} / {pageCount}</strong><button disabled={page >= pageCount} aria-label="Halaman selanjutnya" onClick={() => setPage(page + 1)}><ChevronRight size={16} /></button></div></div>
     </div>

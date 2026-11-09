@@ -46,7 +46,7 @@ export default function App() {
     <main className="main-content">
       <div className="dashboard-intro"><div><div className="eyebrow"><span /> FLEET OPERATIONS INTELLIGENCE</div><h2>Monitoring <em>operasional</em></h2><p>Ringkasan kondisi armada, progres pekerjaan, dan performa maintenance.</p></div><div className="intro-side"><DemoTag /><span>Data diperbarui <b>06 Nov 2026</b></span></div></div>
       {(filtered.breakdowns.length === 0 && filtered.jobSheets.length === 0) && <div className="empty-state"><div><Activity size={20} /></div><strong>Tidak ada data untuk filter ini</strong><span>Ubah periode atau pilihan filter untuk melihat ringkasan lainnya.</span><button onClick={resetFilters}><RotateCcw size={14} /> Reset filter</button></div>}
-      <BreakdownSummary data={filtered.breakdowns} months={mockData.months} />
+      <BreakdownSummary data={filtered.breakdowns} />
       <JobSheetMonitoring data={filtered.jobSheets} />
       <MaintenanceAchievement data={filtered.breakdowns} months={mockData.months} config={mockData.maintenance} />
       <KPIMonitoring jobs={filtered.jobSheets} months={mockData.months} />
