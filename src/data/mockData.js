@@ -166,9 +166,8 @@ export const mockData = {
   categories,
   months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Agu'],
   maintenance: {
-    targetPA: 92,
-    paActual: [89.4, 91.2, 90.6, 93.1, 92.4, 94.2, 93.5, 94.1],
-    paTarget: [92, 92, 92, 92, 92, 92, 92, 92],
+    paRentalTarget: 98,
+    paUnitTarget: 95,
     performanceTarget: 90,
     leadTimeTarget: 5,
   },

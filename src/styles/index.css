@@ -93,3 +93,54 @@ button { cursor: pointer; }
 @media print {
   .filter-bar, .export-button, .avatar-button, .search-box, .pagination, .page-footer > button { display: none !important; }.app-shell, body { background: white; }.main-content { padding: 18px; }.panel, .metric-card { break-inside: avoid; box-shadow: none; }
 }
+
+.pa-overview { display: grid; align-content: start; gap: 10px; min-width: 0; margin-bottom: 0; padding: 15px; }
+.pa-overview-header, .pa-overview-title { display: flex; align-items: center; }
+.pa-overview-header { justify-content: space-between; gap: 14px; }
+.pa-overview-title { min-width: 0; gap: 12px; }
+.pa-overview-icon, .pa-indicator-icon { display: grid; flex: 0 0 auto; place-items: center; color: var(--red); background: #fff0f1; border-radius: 7px; }
+.pa-overview-icon { width: 42px; height: 42px; }
+.pa-overview-title h3 { margin: 0; font: 800 17px/1.3 'Manrope', sans-serif; }
+.pa-overview-title p { margin: 4px 0 0; color: #777; font-size: 10px; line-height: 1.4; }
+.pa-indicators { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.pa-indicator { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(95px, .9fr); gap: 10px; min-width: 0; padding: 11px; border: 1px solid #ececec; border-radius: 8px; background: #fff; box-shadow: 0 2px 7px rgba(0,0,0,.025); }
+.pa-indicator-main { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-content: start; gap: 0 10px; min-width: 0; }
+.pa-indicator-icon { width: 34px; height: 34px; grid-row: span 2; }
+.pa-indicator-copy { min-width: 0; align-self: center; }
+.pa-indicator-copy h4 { margin: 0; font: 800 15px/1.3 'Manrope', sans-serif; }
+.pa-indicator-value { grid-column: 1 / -1; align-self: end; margin-top: 9px; color: var(--red); font: 800 27px/1 'Manrope', sans-serif; }
+.pa-indicator.unit .pa-indicator-icon { color: #d66b73; background: #fff1f2; }
+.pa-indicator.unit .pa-indicator-value { color: #d94350; }
+.pa-indicator-details { display: grid; align-content: center; gap: 8px; padding-left: 9px; border-left: 1px solid #dedee2; }
+.pa-indicator-details > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pa-indicator-details span { color: #666; font-size: 9px; }
+.pa-indicator-details strong { color: #555; font: 700 10px 'Manrope', sans-serif; white-space: nowrap; }
+.pa-indicator-details strong.positive { color: #078b48; }
+.pa-indicator-details strong.negative { color: var(--red); }
+.pa-overview .chart-panel { min-height: 0; }
+.pa-trend-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px 18px; padding: 7px 4px 10px; }
+.pa-trend-legend > span { display: inline-flex; align-items: center; gap: 6px; color: #555; font-size: 9px; }
+.pa-legend-line { width: 18px; height: 0; border-top: 2px solid var(--red); }
+.pa-legend-line.unit { border-color: #ef9ca2; }
+.pa-legend-line.target { border-color: #596276; border-top-style: dashed; }
+.pa-legend-line.unit-target { border-color: #b7bac2; }
+.pa-trend-empty { display: grid; align-content: center; justify-items: center; gap: 7px; min-height: 115px; padding: 16px; color: #888; text-align: center; }
+.pa-trend-empty strong { color: #999; font: 800 19px 'Manrope', sans-serif; }
+.pa-trend-empty span { font-size: 9px; line-height: 1.5; }
+.pa-formula-bar { display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; align-items: center; padding: 9px 10px; border-radius: 7px; background: #f7f7f8; }
+.pa-formula-bar > strong { display: flex; align-items: center; gap: 7px; color: var(--red); font-size: 9px; white-space: nowrap; }
+.pa-formula-bar > span { padding-left: 12px; border-left: 1px solid #d8d8dc; color: #555; font-size: 9px; line-height: 1.5; }
+.pa-data-note { margin: -4px 0 0; color: #999; font-size: 8px; line-height: 1.5; }
+
+@media (max-width: 1200px) {
+  .pa-indicators { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .pa-overview { padding: 13px; }
+  .pa-overview-title h3 { font-size: 14px; }
+  .pa-indicator { grid-template-columns: minmax(0, 1fr) minmax(105px, .8fr); gap: 10px; }
+  .pa-indicator-details { padding-left: 8px; }
+  .pa-formula-bar { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .pa-formula-bar > span { padding: 7px 0 0; border-top: 1px solid #d8d8dc; border-left: 0; }
+}
