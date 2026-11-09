@@ -23,7 +23,7 @@ function KpiPanel({ icon: Icon, title, metrics, trend, targetLabel }) {
       <div className="panel-title-icon"><span className="metric-icon"><Icon size={17} /></span><div><h3>{title}</h3><p>{targetLabel}</p></div></div>
       <span className="demo-chip">DEMO</span>
     </div>
-    <div className={`kpi-metrics ${metrics.length === 5 ? 'five-metrics' : ''}`}>{metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong></div>)}</div>
+    <div className={`kpi-metrics ${metrics.length === 5 ? 'five-metrics' : ''}`}>{metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong className={typeof metric.value === 'string' && metric.value.startsWith('Rp') ? 'kpi-money-value' : undefined}>{metric.value}</strong></div>)}</div>
     <ChartCard title={`Penerimaan & Waktu Proses ${title}`} note="Dari laporan diterima site sampai dikirim ke Warehouse">
       <ResponsiveContainer width="100%" height={185}>
         <ComposedChart data={trend} margin={{ left: -18, right: 6, top: 8, bottom: 0 }}>
